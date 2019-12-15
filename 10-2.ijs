@@ -29,12 +29,12 @@ laser=: 4 : 0
     aim=.>3{y
 
     rr_target=.(rad = aim) # rr
-    rr_destroy=. < ({. /: rr_target) { rr_target
+    rr_destroy=. < ({. /: +/"1 rr_target) { rr_target
     i_destroy=. (<"1 rr) i. rr_destroy
     c_destroy=. < < |. > i_destroy { coord
 
     if. 200 = #x do.
-        x
+        > > x
     else.
         new_copy=. 0 i_destroy } ($ coord) $ 1
         new_coord=. new_copy # coord

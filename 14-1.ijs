@@ -49,6 +49,27 @@ Day14_1=: 3 : 0
   reaction=. get_reaction y
   cost_table=. create_cost_table reaction
   recipe=. (}:"1 reaction) ,. <"1 > cost_table
+  i_want=. ({."1 recipe) i. <'FUEL'
+  want=. 1 i_want } (#recipe)$0
+  recipe calc_cost 0 7 0 0 0 1 0
+)
+
+
+NB. x=. recipe
+NB. y=. want
+calc_cost=: 4 : 0
+  i_ore=. ({."1 x) i. <'ORE'
+  only_ores=. 0 >: +/ 0 i_ore } y
+  if. only_ores do.
+    y
+  else.
+    all_i=. i. #x
+    sel_want=. 0 < y
+    i_want=. sel_want # i. #x
+    gain=. 0 (all_i -. i_want) } > 1&{"1 x
+    cost=. i_want { > 2&{"1 x
+    multiplier=. 0 NB. TODO
+  end.
 )
 
 

@@ -1,11 +1,29 @@
-NB. Day14_1 '/abs/path/to/file'
-Day14_1=: 3 : 0
+NB. Day14_2 '/abs/path/to/file'
+Day14_2=: 3 : 0
   reaction=. get_reaction y
   cost_table=. create_cost_table reaction
   recipe=. (}:"1 reaction) ,. <"1 > cost_table
-  i_want=. ({."1 recipe) i. <'FUEL'
-  want=. 1 i_want } (#recipe)$0
-  recipe calc_cost want
+  i_fuel=. ({."1 recipe) i. <'FUEL'
+  want=. 1 i_fuel } (#recipe)$0
+  ore_per_fuel=. recipe calc_cost want
+  (recipe;i_fuel;1000000000000) brute_force >. 1000000000000 % ore_per_fuel
+)
+
+
+NB. x=. recipe;i_fuel;num_ores
+NB. y=. guess_gain_fuel
+brute_force=: 4 : 0
+  guess=. y
+  recipe=. >0{x
+  i_fuel=. >1{x
+  num_ore=. >2{x
+  want=. guess i_fuel } (#recipe)$0
+  used_ore=. recipe calc_cost want
+  while. num_ore > recipe calc_cost want do.
+    guess=. >: guess
+    want=. guess i_fuel } (#recipe)$0
+  end.
+  <: guess
 )
 
 

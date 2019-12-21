@@ -5,14 +5,15 @@ Day15_2=: 3 : 0
   mem=. getmem y
   ret=. ''
   halt=. 0
-  map=. < (1 1 $ 1) ; 0 0
+  map=. 1 1 $ 1
+  pos=. 0 0
   t_valid_move=. 1 1 1 1
-  queue=. <prog;mem;map
-  sln=. ''
+  queue=. <prog;mem;pos
+  sln_pos=. 0 0
   while. (-. 99 = halt) *. (0 < #queue) *. 0 = +/ 2 = t_valid_move do.
     prog=. >0{ >{. queue
     mem=. >1{ >{. queue
-    map=. >2{ >{. queue
+    pos=. >2{ >{. queue
 
     in=. > {: prog
     new_in=. <"1 in ,"(_ 0) 1 2 3 4
@@ -24,52 +25,53 @@ Day15_2=: 3 : 0
     new_prog_nswe=. >2{"1 ret_nswe
     new_mem_nswe=. >3{"1 ret_nswe
 
-    new_map_nswe=. map update_map out_nswe
+    up_m_p=. (map;pos) update_map out_nswe
+    map=. > {. up_m_p
+    up_pos=. > {: up_m_p
 
-    t_valid_move=. valid_move@>"1 new_map_nswe
-    sln=. , > (t_valid_move = 2) # new_map_nswe
-    t_valid_move=. 1 ((t_valid_move = 2) # i.4) } t_valid_move
-
-    new_queue_item=. <"1 t_valid_move # new_prog_nswe ;"1 new_mem_nswe ;"1 0 new_map_nswe
+    t_valid_pos=. map tally_valid_move up_pos
+    new_pos_nswe=. up_pos +"1 (_1 0),(1 0),(0 _1),:(0 1)
+    t_sln=. t_valid_pos = 2
+    new_sln_pos=. t_sln # new_pos_nswe
+    sln_pos=. , new_sln_pos [`]@.(0 = # new_sln_pos) sln_pos
+    t_valid_pos=. 0 (t_sln # i. # t_valid_pos) } t_valid_pos
+    new_queue_item=. <"1 t_valid_pos # new_prog_nswe ;"1 new_mem_nswe ;"1 new_pos_nswe
     queue=. (}.queue) , new_queue_item
   end.
+  oxy_init_map=. 3 : '1 ((_2 = y) # i. # y) } y'
+  oxy_map=. oxy_init_map"1 map
+  oxy_pos=. sln_pos
   lvl=. 0
-  oxy_map=. > {. sln
-  oxy_start=. > {: sln
-  stk=. < oxy_start ; lvl
+  stk=. < oxy_pos ; lvl
   max_lvl =. lvl <. 0
   while. -. 0 = # stk do.
     curr_pos=. > {. > {. stk
     curr_lvl=. > {: > {. stk
+    oxy_map=. _3 (<curr_pos) } oxy_map
 
     max_lvl=. max_lvl >. curr_lvl
 
-    new_pos=. oxy_map oxy_valid_moves curr_pos
+    new_pos=. oxy_map oxy_valid_move curr_pos
 
-    new_stk_item=. <"1 new_pos ,. >: lvl
-    stk=. new_stk_item , (}. stk)    
+    new_stk_item=. <"1 new_pos ;"1 >: curr_lvl
+    stk=. new_stk_item , (}. stk)
   end.
   max_lvl
 )
 
-
-oxy_valid_moves=: 4 : 0
-  possible_move=. y +"1 (_1 0),(1 0),(0 _1),:(0 1)
-  possible_tile=. (;/ possible_move) { x
-  t_valid_tile=. 0 < possible_tile
-  t_valid_tile # possible_move
+oxy_valid_move=: 4 : 0
+  possible_pos=. y +"1 (_1 0),(1 0),(0 _1),:(0 1)
+  possible_tile=. (<"1 possible_pos) { x
+  t_valid=. 0 < possible_tile
+  t_valid # possible_pos
 )
 
 
-valid_move=: 3 : 0
-  map=. >{.y
-  curr=. >{:y
-  tile=. (< curr) { map
-  if. tile = 2 do.
-    2
-  else.
-    tile > 0
-  end.
+tally_valid_move=: 4 : 0
+  possible_pos=. y +"1 (_1 0),(1 0),(0 _1),:(0 1)
+  possible_tile=. (<"1 possible_pos) { x
+  t_valid=. 0 ((possible_tile < 0) # i.4) } possible_tile
+  t_valid
 )
 
 
@@ -78,13 +80,14 @@ NB. y=. result_nswe
 update_map=: 4 : 0
   map=. >{.x
   curr=. >{:x
-  up_map=. 3 (<curr) } map
+  up_map=. _2 (<curr) } map
   up_mc=. up_map enlarge_map curr
   up_map=. >{. up_mc
   move=. (_1 0),(1 0),(0 _1),:(0 1)
-  up_curr=. move +"1 >{: up_mc
-  up_map=. > {. > update_tile/ (<"0 i. 4) , < up_map;up_curr;y
-  <"1 up_map ;"(_ 1) up_curr
+  up_curr=. >{: up_mc
+  move_up_curr=. move +"1 up_curr
+  up_map=. > {. > update_tile/ (<"0 i. 4) , < up_map;move_up_curr;y
+  up_map;up_curr
 )
 
 
